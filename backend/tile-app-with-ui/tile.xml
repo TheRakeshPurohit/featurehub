@@ -232,7 +232,6 @@
               </execution>
             </executions>
             <configuration>
-              <allowInsecureRegistries>false</allowInsecureRegistries>
               <from>
                 <image>${app.baseimage}</image>
                 <auth>

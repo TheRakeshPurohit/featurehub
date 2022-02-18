@@ -1,5 +1,2 @@
 #!/bin/sh
-rm -rf m2-repo
-mkdir -p m2-repo
-cp -R ~/.m2/repository m2-repo
-docker build -t gcr.io/featurehub/basemvn:1.1 . && rm -rf m2-repo
+docker build -t us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.4-jdk-11 .

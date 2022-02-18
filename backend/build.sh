@@ -12,6 +12,7 @@ else
   echo "Is not RC, tagging latest"
   BUILD_PARAMS="$BUILD_PARAMS -Djib.to.tags=latest"
 fi
+export PACKAGES=${PACKAGES:-pom-packages.xml}
 DOCKER_PREFIX="${OVERRIDE_DOCKER_PREFIX:-featurehub}"
-mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Ddocker-cloud-build=true -Dbuild.version=$VERSION clean install
+mvn -f $PACKAGES -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Ddocker-cloud-build=true -Dbuild.version=$VERSION clean install
 

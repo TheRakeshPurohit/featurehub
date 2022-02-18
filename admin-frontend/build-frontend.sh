@@ -5,7 +5,7 @@ if [ "$1" = "" ]; then
 fi
 rm -rf target/build_web
 mkdir -p target/build_web
-cp build/build.sh target
+cp build/* target
 cd target
 tar xvf *.tar
 #docker run -it -v $PWD/open_admin_app:/opt/app/app -v $PWD/app_mr_layer:/opt/app/app_mr_layer -v $PWD/build:/opt/build featurehub/flutter_web:1.1 /bin/sh /opt/build/build.sh

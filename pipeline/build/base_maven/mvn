@@ -1,0 +1,3 @@
+#!/bin/sh
+export MVN_SETTINGS_HOME=${MVN_SETTINGS_HOME:-$HOME/.m2/settings.xml}
+/usr/share/maven/bin/mvn -s $MVN_SETTINGS_HOME $@

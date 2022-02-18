@@ -1,0 +1,83 @@
+
+substitutions:
+  _DOCKER_PREFIX: featurehub
+  _DOCKERHUB_PASSWORD: blahblah
+
+steps:
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.4-jdk-11'
+    entrypoint: '/bin/sh'
+    # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
+    # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
+    env:
+      - MVN_SETTINGS_HOME=/root/.m2/settings.xml
+    args:
+      - '-c'
+      - 'mkdir -p /root/.m2 && cp pipeline/app-e2e-pipeline/settings.xml /root/.m2'
+    volumes:
+      - name: user.home
+        path: /root
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.4-jdk-11'
+    entrypoint: '/bin/sh'
+    # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
+    # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
+    env:
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
+      - MVN_SETTINGS_HOME=/root/.m2/settings.xml
+    args:
+      - '-c'
+      #      - 'cd backend && mvn -f pom-first.xml --no-transfer-progress clean install'
+      - 'cd backend && mvn -f pom-first.xml --no-transfer-progress clean install && cd .. && mvn  --no-transfer-progress clean install'
+    volumes:
+      - name: user.home
+        path: /root
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.4-jdk-11'
+    entrypoint: '/bin/sh'
+    # now we copy all of the front end code into an offset so it is clean
+    env:
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
+      - MVN_SETTINGS_HOME=/root/.m2/settings.xml
+    args:
+      - '-c'
+      - 'cd admin-frontend && mvn --no-transfer-progress clean generate-sources -Dpom-front-end=false'
+    volumes:
+      - name: user.home
+        path: /root
+  - name: 'featurehub/flutter_web:1.5'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'cd admin-frontend && sh build-from-server.sh'
+    volumes:
+      - name: user.home
+        path: /root
+
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.4-jdk-11'
+    entrypoint: '/bin/sh'
+    # now we have the front end waiting to be packaged up and used
+    env:
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
+      - MVN_SETTINGS_HOME=/root/.m2/settings.xml
+    args:
+      - '-c'
+      - 'cd admin-frontend && mvn --no-transfer-progress install -Dpom-front-end=false'
+    volumes:
+      - name: user.home
+        path: /root
+
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.4-jdk-11'
+    entrypoint: '/bin/sh'
+    # now we have a fully packaged front end, lets bundle it all together and create our images
+    env:
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
+      - REGISTRY_USERNAME=featurehub
+      - REGISTRY_PASSWORD=${_DOCKERHUB_PASSWORD}
+      - MVN_SETTINGS_HOME=/root/.m2/settings.xml
+      - PACKAGES=pom-cloud-build-packages.xml
+      - OVERRIDE_DOCKER_PREFIX=${_DOCKER_PREFIX}
+      - BUILD_PARAMS=-Djib.allowInsecureRegistries=true -Ddocker.goal=build
+    args:
+      - '-c'
+      - 'cd backend && sh ./build.sh'
+    volumes:
+      - name: user.home
+        path: /root
