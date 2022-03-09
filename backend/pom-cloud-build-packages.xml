@@ -40,11 +40,11 @@
   <!-- we don't build the flutter app here -->
   <modules>
     <module>edge-full</module>
-    <module>edge-rest</module>
-    <module>mr</module>
-    <module>dacha</module>
-    <module>party-server</module>
-    <module>party-server-ish</module>
+<!--    <module>edge-rest</module>-->
+<!--    <module>mr</module>-->
+<!--    <module>dacha</module>-->
+<!--    <module>party-server</module>-->
+<!--    <module>party-server-ish</module>-->
   </modules>
 
   <profiles>
