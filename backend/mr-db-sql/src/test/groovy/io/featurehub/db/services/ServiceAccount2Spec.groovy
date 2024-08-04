@@ -45,11 +45,11 @@ class ServiceAccount2Spec extends Base2Spec {
   InternalGroupSqlApi internalGroupSqlApi
 
   def setup() {
-    db.commitTransaction()
+    db.currentTransaction().commitAndContinue()
     internalGroupSqlApi = Mock()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, internalGroupSqlApi)
     cacheSource = Mock(CacheSource)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
     sapi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
@@ -69,7 +69,7 @@ class ServiceAccount2Spec extends Base2Spec {
     environment3 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e3").parentApplication(application1).build()
     db.save(environment3)
 
-    environmentApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, Mock(WebhookEncryptionService))
+    environmentApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
 
     groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.environmentRoles(
       [
@@ -80,7 +80,7 @@ class ServiceAccount2Spec extends Base2Spec {
     ), null, false, false, true, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
-      db.commitTransaction()
+      db.currentTransaction().commitAndContinue()
     }
   }
 
@@ -126,6 +126,7 @@ class ServiceAccount2Spec extends Base2Spec {
   def "service ACL filtering works by application"() {
     given: "i have a second application"
       def app2 = applicationSqlApi.createApplication(portfolio1Id, new CreateApplication().name("acl-sa-test-filter").description("acl test filter"), superPerson)
+      db.currentTransaction().commitAndContinue()
     and: "i have an environment in the second application"
       def env2 = environmentSqlApi.create(new CreateEnvironment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2.id, superPerson)
     and: "i create a new service account"
@@ -304,7 +305,7 @@ class ServiceAccount2Spec extends Base2Spec {
           ]
         )
 
-      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, Opts.opts(FillOpts.Permissions))
+      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, app1.id, Opts.opts(FillOpts.Permissions))
     and: "search for the result"
       def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id, superPerson, Opts.opts(FillOpts.Permissions)).find({it.id == createdServiceAccount.id})
 
@@ -334,14 +335,14 @@ class ServiceAccount2Spec extends Base2Spec {
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlClientEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyClientSide)
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlServerEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyServerSide)
     when: "we update a second time using the new API"
-      def thirdUpdate = sapi.update(portfolio1Id, superuser, secondUpdate.permissions([]), Opts.opts(FillOpts.Permissions))
+      def thirdUpdate = sapi.update(portfolio1Id, superuser, secondUpdate.permissions([]), app1.id, Opts.opts(FillOpts.Permissions))
     then:
       thirdUpdate.permissions.isEmpty()
   }
 
   def "I cannot request or update an unknown service account"() {
     when:
-      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), Opts.empty())
+      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), null, Opts.empty())
       def y = sapi.get(UUID.randomUUID(), Opts.empty())
     then:
       x == null

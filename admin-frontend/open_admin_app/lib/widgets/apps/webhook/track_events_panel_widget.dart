@@ -111,9 +111,9 @@ class TrackingEventListViewState
             for (final item in _items) TrackEventItemWidget(event: item),
             if (_error != null) const FHLoadingError(),
             if (_error == null && !_isLastPage && !_isLoading)
-              _buttonRefresh('More items...'),
+              _buttonRefresh('More records'),
             if (_error != null && !_isLastPage && !_isLoading)
-              _buttonRefresh('Retry...'),
+              _buttonRefresh('Retry'),
             if ((_error != null || _items.isNotEmpty || _isLastPage) &&
                 _isLoading)
               const FHLoadingIndicator(),
@@ -129,9 +129,7 @@ class TrackingEventListViewState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FHFlatButton(
-              onPressed: () => _fetchPage(_pageKey + 1),
-              title: 'More items...'),
+          FHFlatButton(onPressed: () => _fetchPage(_pageKey + 1), title: title),
         ],
       ),
     );
@@ -161,7 +159,7 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
+                      SelectableText(
                           'Unacknowledged request sent at ${event.whenSent.toLocal()}')
                     ],
                   ),
@@ -181,7 +179,7 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
+                      SelectableText(
                           'Status: ${_decodeStatus(response.status)}, received at ${response.whenReceived.toLocal()}')
                     ],
                   ),
@@ -200,7 +198,7 @@ class TrackEventItemWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
+                    SelectableText(
                         '${_decodeStatus(response.status)} received at ${response.whenReceived.toLocal()}'),
                   ],
                 ),
@@ -211,7 +209,7 @@ class TrackEventItemWidget extends StatelessWidget {
                       Column(
                         children: [
                           for (var header in headers.keys)
-                            Text("$header: ${headers[header]}")
+                            SelectableText("$header: ${headers[header]}")
                         ],
                       )
                     ],
@@ -220,7 +218,7 @@ class TrackEventItemWidget extends StatelessWidget {
                   Row(
                     children: [
                       const Text('Content'),
-                      Text("${response.message}")
+                      SelectableText("${response.message}")
                     ],
                   )
               ],
