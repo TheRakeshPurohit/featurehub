@@ -1,7 +1,7 @@
 @needs-webserver @streamingvariants
 Feature: Webhooks work as expected
 
-  @webhook @webhooks
+  @webhook @webhooks  @notsaas
   Scenario: I setup and test a webhook
     Given I am logged in and have a person configured
     And I create a new portfolio
@@ -25,7 +25,7 @@ Feature: Webhooks work as expected
     Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and off and version 3
     And we should have 1 messages in the list of webhooks
 
-  @webhook2 @webhooks
+  @webhook2 @webhooks  @notsaas
   Scenario: I test a webhook that is triggered by a TestSDK changing a value
     Given I create a new portfolio
     And I create an application
@@ -36,7 +36,7 @@ Feature: Webhooks work as expected
     And I use the Test SDK to update feature FEATURE_TITLE_TO_UPPERCASE to unlocked and off
     And we receive a webhook that has changed the feature FEATURE_TITLE_TO_UPPERCASE that belongs to the Test SDK
 
-  @webhook3 @webhooks
+  @webhook3 @webhooks  @notsaas
   Scenario: I want to see if we can cause a webhook to fail
     Given I create a new portfolio
     And I create an application

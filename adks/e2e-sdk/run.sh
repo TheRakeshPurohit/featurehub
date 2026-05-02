@@ -3,10 +3,12 @@ mkdir -p logs
 rm -rf logs/*
 if [ $# -eq 0 ]
   then
-  echo DEBUG=true npm run test
-  DEBUG=true pnpm run test
+  if [ "$SAAS_ORGANISATION_ID" != "" ]; then
+    DEBUG=true pnpm run test --tags "not @notsaas"
+  else
+    DEBUG=true pnpm run test
+  fi
 else
-  echo DEBUG=true npm run test --tags $1
   DEBUG=true pnpm run test --tags $1
 fi
 

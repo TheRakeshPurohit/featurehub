@@ -56,7 +56,7 @@ Feature: All flag based functionality works as expected
 
     # assumes server is configured with
     # sdk.feature.properties=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
-  @extended-data
+  @extended-data  @notsaas
   Scenario: When an API key is allowed extended data access, we will get enriched feature properties
     Given There is a new feature flag
     Then there is no enriched data

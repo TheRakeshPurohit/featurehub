@@ -1,7 +1,7 @@
 @needs-webserver @allvariants @streamingvariants
 Feature: System supports Slack
 
-  @slack-external @slack
+  @slack-external @slack @notsaas
   Scenario: I setup and test a slack event to an external app
     Given I am logged in and have a person configured
     And I create a new portfolio
@@ -15,7 +15,7 @@ Feature: System supports Slack
     And I set the feature flag to unlocked and on
     Then I receive a cloud event of type "integration/slack-v1"
 
-  @slack-direct  @slack
+  @slack-direct  @slack  @notsaas
   Scenario: I setup and test a slack event directly to slack
     Given I am logged in and have a person configured
     And I create a new portfolio
